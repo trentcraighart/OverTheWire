@@ -1,0 +1,23 @@
+Solution and Method
+
+Upon examining narnia3.c you could see that there is a buffer overflow vulnerablity when asking the user for input. In addition, the way the variables are declared allows the user to write into the second location to replace the /dev/null 
+
+From here I experimented with ways to get a string to format properly for the overflow, while it doesn't work, I thought this was funny enough to share
+./narnia3 /////////etc/narnia_pass/narnia4/tmp/exploithere
+
+Next I tried working within the tmp space in order to make larger filepaths to test if it would work properly. This is where I realized that the I'm going to be accidently removing the NULL character at the end of the first 32Byte array by overflowwing it. This means that we will have do some strange things with symbollic links
+
+
+vim /tmp/ThirtyTwoByteStringPathAAAA/tmp/here
+
+In this situation, when we give this address it will be read twice:
+
+Time 1: /tmp/ThirtyTwoByteStringPathAAAA/tmp/output
+Time 2: /tmp/output
+
+From this point we can symbolically link the first file to the one that we want to see the contents of.
+
+
+(note this solution is after making the apropriate directories in tmp)
+ln -s /etc/narnia_pass/narnia4 /tmp/ThirtyTwoByteStringPathAAA/tmp/output
+./narnia3 /tmp/ThirtyTwoByteStringPathAAAA/tmp/output

