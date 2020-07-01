@@ -1,0 +1,10 @@
+Solution and Method
+
+Upon examining the binary, we need to find a way to change the value of i. Since the input is being checked, we have to look for a new way to exploit.
+
+Using printf() to show user input, we can begin to throw in our own %n values to modify a variable.
+the following string will take the address, and insert 500 (%n writes the length of a string) into the address provided. 
+
+./narnia5 $(python -c 'print "\xf0\xd4\xff\xff" * 125 + "%n"')
+
+
