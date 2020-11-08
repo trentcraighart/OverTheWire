@@ -1,0 +1,4 @@
+To solve this problem I opend up the program in GDB.
+Upon analysis we can see a point where it loads from memory with <memfrom>
+If we set a breakpoint here, we can look for strings with x/100s $esp
+There we can find the password!

@@ -1,0 +1,16 @@
+With behemoths code being a bit more robust, I've spent awhile looking at the gdb debug for things of note.
+One of the first things that stood out to me was the cmp at 0x080485bf where if the conditional isn't met,
+the program unlinks. The value it's comparing against is 0x8000 in hex which equates to 32768 in decimal.
+
+My gut reaction is the process ID probably needs to be equal to that value in order for the program to not unlink
+itself in the first comparision. While playing around with idea, I realized that it was probably just the upper
+limit of the system for the pid. 
+
+The next thing I thought about was finding a way to hook the system calls in order to execute my own code. To
+do this I did some reserch and found that changing enviromental variables could be a way to get touch to execute 
+the shell.
+
+With this you can go into a tmp folder and change the path variable to be equal to the location where your 
+fake touch shell script is. 
+
+

